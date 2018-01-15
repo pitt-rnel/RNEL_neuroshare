@@ -3,6 +3,7 @@ function [stimData] = readStimEvents(dataPath, NEVfilenum, varargin)
     % ACN
     %   created 11/16 
     %   modified 2/17
+    %   modified 1/18
     
     DEFINE_CONSTANTS
     stimChan = [];
