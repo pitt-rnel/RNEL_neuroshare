@@ -1,6 +1,6 @@
 function [ns_RESULT, nsEntityInfo] = ns_GetEntityInfo(hFile, EntityID)
 % ns_GetEntityInfo - Retrieves general entity information and type
-% change made in parent module
+% 
 % Usage:
 % [ns_RESULT, nsEntityInfo] = ns_GetEntityInfo(hFile, EntityID)
 % 
