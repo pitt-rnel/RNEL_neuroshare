@@ -3,6 +3,8 @@ function [digitalData] = readDigitalEvents(dataPath, NEVfilenum, varargin)
     % ACN
     %   created 11/16 
     %   modified 2/17
+    % TODO
+    %    USAGE and Description
     
     DEFINE_CONSTANTS
     sma = 3;
