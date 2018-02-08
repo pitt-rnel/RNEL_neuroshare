@@ -14,7 +14,7 @@ function [stimEvts] = read_stimEvents(dataPath, channels)
     %
     %   OUTPUT
     %   ===================================================================
-    %   analogData      : (1xn) cell array of stim times
+    %   stimEvts      : (1xn) cell array of stim times
     %
     %   ACN created 11/16 
     %   ACN modified 2/17
@@ -29,6 +29,7 @@ function [stimEvts] = read_stimEvents(dataPath, channels)
     stimEvts = cell(1,numChannels);
     
     for iChan = 1:numChannels
+        fprintf('Reading nev file, channel: %02d\n', channels(iChan))
         chanEntityIdx = find([hFile.Entity(:).ElectrodeID] == channels(iChan) + 5120);
         if isempty(chanEntityIdx)
             disp({hFile.Entity.Label})
