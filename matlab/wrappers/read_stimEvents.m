@@ -1,74 +1,45 @@
-function [stimData] = read_stimEvents(dataPath, NEVfilenum, varargin)
+function [stimEvts] = read_stimEvents(dataPath, channels)
     
     %   DESCRIPTION
     %   ===================================================================
-    %   Reads continuous data for input channels from specified NS5/NF3 file 
+    %   Reads stim events for input channels from specified NEV file. 
+    %   REMEMBER the stim channel numbering changes based on the FE port 
+    %   where the nanostim is connected. Stim channels are numbered as 
+    %   follows: (128*(port-1)+chan) where port A=1, B=2,...
     %
     %   INPUTS
     %   ===================================================================
     %   dataPath        : (char) path to data file
-    %   dataStream      : (char) 'hi-res'/'raw'/'analog'
-    %   channels        : (int) 1xn vector of channels to be read
+    %   channels        : (int) 1xn vector of stim channels
     %
     %   OUTPUT
     %   ===================================================================
-    %   analogData      : (nxm) array of data points for n channels
-    %   timeVec         : (1xm) time vector
+    %   analogData      : (1xn) cell array of stim times
     %
     %   ACN created 11/16 
     %   ACN modified 2/17
     
-    DEFINE_CONSTANTS
-    stimChan = [];
-    END_DEFINE_CONSTANTS
-    
-    stimData  = struct;
-    stimData.timeStamp = cell(1,length(stimChan));
-    stimData.data =  cell(1,length(stimChan));
-    stimData.dataSize =  cell(1,length(stimChan));
-    
-    [~,tmp,~] = fileparts(fileparts(dataPath));
-    tmp2 = strsplit(tmp,' ');
-    catName = tmp2{1};
-    
-    if exist(fullfile(dataPath,sprintf('datafile%04d.ns5',NEVfilenum)), 'file') == 2
-        completeFilePath = fullfile(dataPath,sprintf('datafile%04d.ns5',NEVfilenum));
-        [~,f,~]=fileparts(completeFilePath);
-        NotifierManager.notify('status', 'Processing NEV file: %s', f)
-    elseif exist(fullfile(dataPath,sprintf('%s-%04d.ns5',catName,NEVfilenum)), 'file') == 2
-        completeFilePath = fullfile(dataPath,sprintf('%s-%04d.ns5',catName,NEVfilenum));
-        [~,f,~]=fileparts(completeFilePath);
-        NotifierManager.notify('status', 'Processing NEV file: %s', f)
+    if exist(dataPath)
+        [~,hFile] = ns_OpenFile(dataPath);
     else
-        completeFilePath = 999;
-        NotifierManager.notify('warning', 'Could not find NEV file: %s', f)
+        error('File not found')
     end
-    
-    
-    if completeFilePath ~= 999
-        % Open the file and extract some basic information
-        [~, hFile] = ns_OpenFile(completeFilePath);
-        if isempty(stimChan)
-            stimChan = [hFile.Entity(cellfun(@(x) ~isempty(strfind(x, 'stim')), {hFile.Entity.Label})).ElectrodeID]-5120;
-        end
-        for iChan = 1:length(stimChan)
-            
-            entityID = find([hFile.Entity(:).ElectrodeID] == stimChan(iChan) + 5120);
-            
-            if ~isempty(entityID)
-                [~, entityInfo] = ns_GetEntityInfo(hFile, entityID(end));
 
-                NotifierManager.notify('status', 'Reading NEV file: %03d, digital channel: %02d', NEVfilenum, stimChan(iChan))
-                numCount = entityInfo.ItemCount;
-                stimData.data{iChan} = cell(1, numCount);
-                stimData.timeStamp{iChan} = NaN(1, numCount); 
-                stimData.dataSize{iChan} = NaN(1, numCount);
-                for i = 1:numCount
-                    [~, stimData.timeStamp{iChan}(i), stimData.data{iChan}{i}, stimData.dataSize{iChan}(i)] = ns_GetSegmentData(hFile, entityID, i);
-                end 
+    numChannels = length(channels);
+    stimEvts = cell(1,numChannels);
+    
+    for iChan = 1:numChannels
+        chanEntityIdx = find([hFile.Entity(:).ElectrodeID] == channels(iChan) + 5120);
+        if isempty(chanEntityIdx)
+            disp({hFile.Entity.Label})
+            error('Could not find entity %d. Entities found in file are listed above', channels(iChan))
+        else
+            numStimEvts = hFile.Entity(chanEntityIdx).Count;
+            stimEvts{iChan} = zeros(1,numStimEvts);
+            for i = 1:numStimEvts
+                [~,stimEvts{iChan}(i),~,~] = ns_GetSegmentData(hFile, chanEntityIdx, i);
             end
         end
-        ns_CloseFile(hFile);
-        
     end
+    ns_CloseFile(hFile_stim);
 end
