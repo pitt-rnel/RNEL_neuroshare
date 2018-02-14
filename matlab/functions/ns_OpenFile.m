@@ -81,7 +81,13 @@ function [ns_RESULT, hFile] = ns_OpenFile(varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ns_RESULT = [];
 hFile = [];
-ext = '.n**';
+mversion = version('-release'); 
+mversion = str2num(mversion(1:4)); 
+if mversion<2016
+    ext = '.n**';
+else
+    ext = '.n*'; 
+end
 % Checking input arguments for determining which file to load. 
 
 % If there there are no input arguments OR there is one input argument and 
