@@ -1,4 +1,4 @@
-function [stimEvts] = read_stimEvents(dataPath, channels)
+function [stimEvts, channels] = read_stimEvents(dataPath, channels)
     
     %   DESCRIPTION
     %   ===================================================================
@@ -24,7 +24,11 @@ function [stimEvts] = read_stimEvents(dataPath, channels)
     else
         error('File not found')
     end
-
+    
+    if isempty(channels)
+        channels = [hFile.Entity(cellfun(@(x) ~isempty(strfind(x, 'stim')), {hFile.Entity.Label})).ElectrodeID]-5120;
+    end
+    
     numChannels = length(channels);
     stimEvts = cell(1,numChannels);
     
@@ -42,5 +46,5 @@ function [stimEvts] = read_stimEvents(dataPath, channels)
             end
         end
     end
-    ns_CloseFile(hFile_stim);
+    ns_CloseFile(hFile);
 end
