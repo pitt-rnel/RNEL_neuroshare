@@ -28,6 +28,9 @@ function [stimEvts, channels] = read_stimEvents(dataPath, channels)
     if isempty(channels)
         channels = [hFile.Entity(cellfun(@(x) ~isempty(strfind(x, 'stim')), {hFile.Entity.Label})).ElectrodeID]-5120;
     end
+    if ~isempty(find(channels==0))
+        channels(find(channels==0)) = []; 
+    end
     
     numChannels = length(channels);
     stimEvts = cell(1,numChannels);
