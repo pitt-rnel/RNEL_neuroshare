@@ -31,10 +31,26 @@ function [analogData, timeVec] = read_continuousData(dataPath, datastream, chann
         type_mask = ismember({hFile.FileInfo.Type}, 'nf3');
         endIdx = hFile.FileInfo(type_mask).TimeStamps(2);
         timeVec = linspace(0,endIdx/fs,endIdx);
-    elseif ismember(datastream, {'raw', 'analog'})
+    elseif strcmp(datastream, 'raw')
         fs = 30e3;
         type_mask = ismember({hFile.FileInfo.Type}, 'ns5');
         endIdx = hFile.FileInfo(type_mask).TimeStamps(2);
+        timeVec = linspace(0,endIdx/fs,endIdx);
+    elseif ismember(datastream, 'analog')                       % analog defaults to 30k. 1K is extracted only if 30k does not exist
+        type_mask = ismember({hFile.FileInfo.Type}, 'ns5');
+        if any(type_mask)
+            fs = 30e3;
+            endIdx = hFile.FileInfo(type_mask).TimeStamps(2);
+        else
+            warning('30K analog channel not found. Checking for 1K channel')
+            type_mask = ismember({hFile.FileInfo.Type}, 'ns2');
+            if any(type_mask)
+                fs = 1e3;
+                endIdx = hFile.FileInfo(type_mask).TimeStamps(2);
+            else
+                error('No 1K data found for this channel')
+            end
+        end
         timeVec = linspace(0,endIdx/fs,endIdx);
     else
         error('Invalid data stream')
