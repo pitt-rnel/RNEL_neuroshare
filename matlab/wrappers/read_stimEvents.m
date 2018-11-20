@@ -1,4 +1,4 @@
-function [stimEvts, channels] = read_stimEvents(dataPath, channels)
+function [stimEvts, channels, stimWF] = read_stimEvents(dataPath, channels)
     
     %   DESCRIPTION
     %   ===================================================================
@@ -15,6 +15,8 @@ function [stimEvts, channels] = read_stimEvents(dataPath, channels)
     %   OUTPUT
     %   ===================================================================
     %   stimEvts      : (1xn) cell array of stim times
+    %   channels      : (1xn) vector of stim channels read
+    %   stimWF        : (1xn) cell array of stim voltage waveforms
     %
     %   ACN created 11/16 
     %   ACN modified 2/17
@@ -34,6 +36,7 @@ function [stimEvts, channels] = read_stimEvents(dataPath, channels)
     
     numChannels = length(channels);
     stimEvts = cell(1,numChannels);
+    stimWF = cell(1,numChannels);
     
     for iChan = 1:numChannels
         fprintf('Reading nev file, channel: %02d\n', channels(iChan))
@@ -45,7 +48,7 @@ function [stimEvts, channels] = read_stimEvents(dataPath, channels)
             numStimEvts = hFile.Entity(chanEntityIdx).Count;
             stimEvts{iChan} = zeros(1,numStimEvts);
             for i = 1:numStimEvts
-                [~,stimEvts{iChan}(i),~,~] = ns_GetSegmentData(hFile, chanEntityIdx, i);
+                [~,stimEvts{iChan}(i),stimWF{iChan}(i,:),~] = ns_GetSegmentData(hFile, chanEntityIdx, i);
             end
         end
     end
